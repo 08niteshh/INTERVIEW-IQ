@@ -22,7 +22,6 @@ import { InterviewRoom3D } from '../components/3d/InterviewRoom3D';
 import { useAuth } from '../context/AuthContext';
 
 export const LandingPage: React.FC = () => {
-  const { loginAsDemoUser } = useAuth();
 
   return (
     <div className="pt-24 pb-20 space-y-24">
@@ -62,9 +61,8 @@ export const LandingPage: React.FC = () => {
                   variant="secondary"
                   size="lg"
                   icon={<Zap className="w-5 h-5 text-cyan-400" />}
-                  onClick={() => loginAsDemoUser('DATA_ANALYST')}
                 >
-                  TRY 1-CLICK DEMO
+                  EXPLORE DASHBOARD
                 </Button3D>
               </Link>
             </div>

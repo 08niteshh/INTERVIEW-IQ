@@ -1,12 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, JobRole, ExperienceLevel } from '../types';
-import { DEMO_USERS } from '../data/mockDatabase';
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   loginWithCredentials: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  loginAsDemoUser: (role: 'DATA_ANALYST' | 'FULL_STACK' | 'FRONTEND') => void;
   register: (name: string, email: string, targetRole: JobRole, experienceLevel: ExperienceLevel) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   updateUserProfile: (updates: Partial<User>) => void;
@@ -21,10 +19,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         return JSON.parse(saved);
       } catch (e) {
-        return DEMO_USERS[0];
+        return null;
       }
     }
-    return DEMO_USERS[0]; // Default to Nitesh Yadav (Data Analyst demo persona)
+    return null;
   });
 
   useEffect(() => {
@@ -36,15 +34,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   const loginWithCredentials = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    const found = DEMO_USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (found) {
-      setUser(found);
-      return { success: true };
-    }
-    // Create new account if not demo
-    const newUser: User = {
+    const cleanName = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const loggedInUser: User = {
       id: `usr-${Date.now()}`,
-      name: email.split('@')[0].toUpperCase(),
+      name: cleanName || 'Candidate',
       email: email,
       avatar: `https://api.dicebear.com/7.x/identicon/svg?seed=${email}`,
       targetRole: 'Data Analyst',
@@ -54,14 +47,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       practiceHours: 0,
       joinedAt: new Date().toISOString(),
     };
-    setUser(newUser);
+    setUser(loggedInUser);
     return { success: true };
-  };
-
-  const loginAsDemoUser = (role: 'DATA_ANALYST' | 'FULL_STACK' | 'FRONTEND') => {
-    if (role === 'DATA_ANALYST') setUser(DEMO_USERS[0]);
-    else if (role === 'FULL_STACK') setUser(DEMO_USERS[1]);
-    else setUser(DEMO_USERS[2]);
   };
 
   const register = async (
@@ -100,7 +87,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         isAuthenticated: !!user,
         loginWithCredentials,
-        loginAsDemoUser,
         register,
         logout,
         updateUserProfile,

@@ -25,7 +25,7 @@ import { Button3D } from '../ui/Button3D';
 import { Badge } from '../ui/Badge';
 
 export const Navbar: React.FC = () => {
-  const { user, loginAsDemoUser, logout } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
   const { activeSession, isAiMuted, toggleAiMute } = useInterview();
   const location = useLocation();
   const navigate = useNavigate();
@@ -111,86 +111,94 @@ export const Navbar: React.FC = () => {
             {isAiMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-cyan-400" />}
           </button>
 
-          {/* Persona Switcher Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setProfileDropdownOpen(prev => !prev)}
-              className="flex items-center gap-2 p-1.5 rounded-2xl glass-pill hover:bg-white/10 border border-white/10 transition-all text-xs"
-            >
-              <img
-                src={user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80'}
-                alt={user?.name || 'User'}
-                className="w-7 h-7 rounded-xl object-cover border border-cyan-400/40"
-              />
-              <div className="text-left hidden md:block">
-                <p className="font-bold text-white leading-tight truncate max-w-[100px]">{user?.name || 'Nitesh'}</p>
-                <p className="text-[10px] text-cyan-400/80 font-mono leading-tight">{user?.targetRole || 'Data Analyst'}</p>
-              </div>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-            </button>
+          {/* User Profile / Auth State */}
+          {user ? (
+            <div className="relative">
+              <button
+                onClick={() => setProfileDropdownOpen(prev => !prev)}
+                className="flex items-center gap-2 p-1.5 rounded-2xl glass-pill hover:bg-white/10 border border-white/10 transition-all text-xs"
+              >
+                <img
+                  src={user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80'}
+                  alt={user.name}
+                  className="w-7 h-7 rounded-xl object-cover border border-cyan-400/40"
+                />
+                <div className="text-left hidden md:block">
+                  <p className="font-bold text-white leading-tight truncate max-w-[100px]">{user.name}</p>
+                  <p className="text-[10px] text-cyan-400/80 font-mono leading-tight">{user.targetRole}</p>
+                </div>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+              </button>
 
-            {/* Profile & Demo Switcher Menu */}
-            {profileDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-64 rounded-2xl glass-panel p-2 shadow-2xl border border-white/15 z-50 text-xs space-y-2">
-                <div className="p-2 border-b border-white/10">
-                  <p className="font-bold text-white">{user?.name}</p>
-                  <p className="text-[11px] text-slate-400 truncate">{user?.email}</p>
-                  <div className="mt-1 flex items-center gap-1.5">
-                    <Badge variant="purple" size="sm">{user?.targetRole}</Badge>
-                    <Badge variant="cyan" size="sm">{user?.experienceLevel?.replace('_', '-')}</Badge>
+              {/* Profile Dropdown Menu (Cleaned - No hardcoded names) */}
+              {profileDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 rounded-2xl glass-panel p-2 shadow-2xl border border-white/15 z-50 text-xs space-y-2">
+                  <div className="p-2 border-b border-white/10">
+                    <p className="font-bold text-white">{user.name}</p>
+                    <p className="text-[11px] text-slate-400 truncate">{user.email}</p>
+                    <div className="mt-1 flex items-center gap-1.5">
+                      <Badge variant="purple" size="sm">{user.targetRole}</Badge>
+                      <Badge variant="cyan" size="sm">{user.experienceLevel?.replace('_', '-')}</Badge>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="w-full text-left px-2 py-1.5 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white flex items-center gap-2"
+                    >
+                      <Layers className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Dashboard</span>
+                    </Link>
+                    <Link
+                      to="/resume"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="w-full text-left px-2 py-1.5 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white flex items-center gap-2"
+                    >
+                      <FileText className="w-3.5 h-3.5 text-purple-400" />
+                      <span>Resume Hub</span>
+                    </Link>
+                    <Link
+                      to="/improvement"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="w-full text-left px-2 py-1.5 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white flex items-center gap-2"
+                    >
+                      <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Improvement Plan</span>
+                    </Link>
+                  </div>
+
+                  <div className="border-t border-white/10 pt-1">
+                    <button
+                      onClick={() => {
+                        logout();
+                        setProfileDropdownOpen(false);
+                        navigate('/login');
+                      }}
+                      className="w-full text-left px-2 py-1.5 rounded-xl hover:bg-rose-500/20 text-rose-300 flex items-center gap-2"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Sign Out</span>
+                    </button>
                   </div>
                 </div>
-
-                <div className="space-y-1">
-                  <p className="text-[10px] font-mono uppercase text-slate-500 px-2 pt-1 font-bold">Switch Demo Persona</p>
-                  <button
-                    onClick={() => {
-                      loginAsDemoUser('DATA_ANALYST');
-                      setProfileDropdownOpen(false);
-                    }}
-                    className="w-full text-left px-2 py-1.5 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-between"
-                  >
-                    <span>Nitesh Yadav (Data Analyst)</span>
-                    <span className="text-[10px] font-mono text-cyan-400">PL-300</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      loginAsDemoUser('FULL_STACK');
-                      setProfileDropdownOpen(false);
-                    }}
-                    className="w-full text-left px-2 py-1.5 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-between"
-                  >
-                    <span>Alex Vance (Full Stack Dev)</span>
-                    <span className="text-[10px] font-mono text-purple-400">React/Py</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      loginAsDemoUser('FRONTEND');
-                      setProfileDropdownOpen(false);
-                    }}
-                    className="w-full text-left px-2 py-1.5 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-between"
-                  >
-                    <span>Priya Sharma (Frontend)</span>
-                    <span className="text-[10px] font-mono text-emerald-400">Fresher</span>
-                  </button>
-                </div>
-
-                <div className="border-t border-white/10 pt-1">
-                  <button
-                    onClick={() => {
-                      logout();
-                      setProfileDropdownOpen(false);
-                      navigate('/login');
-                    }}
-                    className="w-full text-left px-2 py-1.5 rounded-xl hover:bg-rose-500/20 text-rose-300 flex items-center gap-2"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>Sign Out</span>
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link to="/login">
+                <button className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/5">
+                  Sign In
+                </button>
+              </Link>
+              <Link to="/register">
+                <Button3D variant="primary" size="sm">
+                  Get Started
+                </Button3D>
+              </Link>
+            </div>
+          )}
 
           {/* Quick CTA */}
           <Link to="/interview/new" className="hidden sm:block">
